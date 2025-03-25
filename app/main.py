@@ -1,16 +1,27 @@
 from fastapi import FastAPI
-from app.routes import cardata  # Importing routes
-from app.database import engine, Base
+from app.routes.carmodels import router as company_router
+from app.database import async_engine
+from app.models.base import Base
+import asyncio
+from app.models import (
+    base,company,models,spare)
 
-# Initialize FastAPI app
 app = FastAPI()
+app.include_router(company_router, prefix="/carmodels")
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
 
-# Include routes
-app.include_router(cardata.router)
+async def init_db():
+    """Initialize the database asynchronously."""
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+@app.on_event("startup")
+async def startup():
+    """Run database initialization on startup."""
+    await init_db()
+
 
 @app.get("/")
-def root():
+async def root():
     return {"message": "Welcome to Car Spare API"}
