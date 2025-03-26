@@ -16,6 +16,16 @@ services:
     networks:
       - carspare_network
 
+  adminer:
+    image: adminer
+    container_name: carspare-adminer
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: db  # Connects to "db" service
+    ports:
+      - "8080:8080"
+    networks:
+      - carspare_network
 
 volumes:
   postgres_data:
