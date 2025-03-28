@@ -12,10 +12,29 @@ router = APIRouter(prefix="/carmodels", tags=["Carmodels"])
 
 @router.get("/search/", response_model=list[CarModelResponse])
 async def search_cars(query: str, db: AsyncSession = Depends(get_async_db)):
-    """Async search for car models by company name or model name, with fuzzy & prefix search."""
+    """Async search for car models by exact match first, then fuzzy search."""
     query = query.strip().lower()
 
-    # ✅ Use PostgreSQL trigram similarity search for company names
+    # ✅ Step 1: Try to get an exact match
+    result = await db.execute(
+        select(CarModel)
+        .options(joinedload(CarModel.company))
+        .filter(CarModel.name.ilike(query))  # Case-insensitive exact match
+    )
+    exact_match = result.scalars().all()
+
+    if exact_match:
+        return [
+            {
+                "model_name": model.name,
+                "company_brand": model.company.name,
+                "brand_image_url": model.company.image_url,  # ✅ Added
+                "model_image_url": model.image_url  # ✅ Added
+            }
+            for model in exact_match
+        ]
+
+    # ✅ Step 2: Try company similarity search
     sql = text("""
         SELECT id, name FROM car_companies 
         WHERE name % :query
@@ -29,17 +48,22 @@ async def search_cars(query: str, db: AsyncSession = Depends(get_async_db)):
         company_id = best_match_company[0][0]
         result = await db.execute(
             select(CarModel)
-            .options(joinedload(CarModel.company))  # ✅ Eagerly load `company`
+            .options(joinedload(CarModel.company))
             .filter(CarModel.company_id == company_id)
         )
         models = result.scalars().all()
         return [
-            {"name": model.name, "company_name": model.company.name, "image_url": model.image_url}
+            {
+                "model_name": model.name,
+                "company_brand": model.company.name,
+                "brand_image_url": model.company.image_url,  # ✅ Added
+                "model_image_url": model.image_url  # ✅ Added
+            }
             for model in models
         ]
 
-    # ✅ Fallback: Fuzzy search for car models using Levenshtein distance
-    result = await db.execute(select(CarModel).options(joinedload(CarModel.company)))  # ✅ Load `company`
+    # ✅ Step 3: Fallback to fuzzy search (only if no exact match found)
+    result = await db.execute(select(CarModel).options(joinedload(CarModel.company)))
     all_models = result.scalars().all()
     
     best_match_models = [
@@ -49,7 +73,12 @@ async def search_cars(query: str, db: AsyncSession = Depends(get_async_db)):
 
     if best_match_models:
         return [
-            {"name": model.name, "company_name": model.company.name, "image_url": model.image_url}
+            {
+                "model_name": model.name,
+                "company_brand": model.company.name,
+                "brand_image_url": model.company.image_url,  # ✅ Added
+                "model_image_url": model.image_url  # ✅ Added
+            }
             for model in best_match_models
         ]
 

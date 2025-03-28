@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 class CarCompanyResponse(BaseModel):
-    name: str
+    company_brand: str  # Changed from `name`
     image_url: str | None
 
     class Config:
