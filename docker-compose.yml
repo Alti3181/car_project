@@ -12,7 +12,7 @@ services:
     ports:
       - "5434:5432"
     volumes:    
-      - postgres_data:/var/lib/postgresql/data
+      - carspare_postgres_data:/var/lib/postgresql/data  # Corrected volume reference
     networks:
       - carspare_network
 
@@ -28,7 +28,7 @@ services:
       - carspare_network
 
 volumes:
-  postgres_data:
+  carspare_postgres_data:  # Corrected volume name to match the service
 
 networks:
   carspare_network:
