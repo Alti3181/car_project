@@ -1,3 +1,4 @@
+#app/models/spare.py
 from __future__ import annotations
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DECIMAL
 from sqlalchemy.orm import relationship

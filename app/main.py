@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.carmodels import router as carmodels_router
 from app.routes.carspares import router as spare_parts_router
+from app.routes.admincompany import company_router
+from app.routes.adminmodel import model_router
+from app.routes.adminspare import spare_router
 from app.database import async_engine
 from app.models import Base
 import logging
@@ -21,9 +24,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ✅ Include routers WITHOUT prefix to avoid duplication
-app.include_router(carmodels_router)  
+# ✅ Include routers for car models, spare parts, and admin routes
+app.include_router(carmodels_router)
 app.include_router(spare_parts_router)
+app.include_router(company_router)  # Include the company routes
+app.include_router(model_router)    # Include the model routes
+app.include_router(spare_router)    # Include the spare part routes
 
 async def init_db():
     """Initialize the database asynchronously."""

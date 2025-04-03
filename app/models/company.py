@@ -1,3 +1,4 @@
+#app/models/company.py
 from __future__ import annotations
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
