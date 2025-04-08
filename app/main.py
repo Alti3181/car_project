@@ -27,7 +27,7 @@ app.add_middleware(
 )
 
 # Admin routes
-app.include_router(admincompany.router, prefix="/api/v1/admin/company", tags=["Admin Company"])
+app.include_router(admincompany.company_router, prefix="/api/v1/admin/company", tags=["Admin Company"])
 app.include_router(adminmodel.router, prefix="/api/v1/admin/model", tags=["Admin Model"])
 app.include_router(adminspare.router, prefix="/api/v1/admin/spare", tags=["Admin Spare"])
 
