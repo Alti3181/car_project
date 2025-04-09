@@ -1,5 +1,5 @@
 #app/routes/carspare.py
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends , HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import joinedload
@@ -36,3 +36,21 @@ async def search_spare_parts(model_name: str, db: AsyncSession = Depends(get_asy
         )
         for part in parts
     ]
+
+@router.get("/{spare_id}", response_model=SparePartResponse)
+async def get_spare(spare_id: int, db: AsyncSession = Depends(get_async_db)):
+    result = await db.execute(select(SparePart).filter(SparePart.id == spare_id))
+    spare = result.scalar_one_or_none()
+
+    if not spare:
+        raise HTTPException(status_code=404, detail="Spare part not found")
+
+    return SparePartResponse(
+        id=spare.id,
+        name=spare.name,
+        category=spare.category,
+        model_id=spare.model_id,
+        quantity=spare.quantity,
+        price=spare.price,
+        img=spare.image_url
+    )
