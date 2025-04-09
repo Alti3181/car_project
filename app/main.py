@@ -28,12 +28,12 @@ app.add_middleware(
 
 # Admin routes
 app.include_router(admincompany.company_router, prefix="/api/v1/admin/company", tags=["Admin Company"])
-app.include_router(adminmodel.router, prefix="/api/v1/admin/model", tags=["Admin Model"])
-app.include_router(adminspare.router, prefix="/api/v1/admin/spare", tags=["Admin Spare"])
+app.include_router(adminmodel.model_router, prefix="/api/v1/admin/model", tags=["Admin Model"])
+app.include_router(adminspare.spare_router, prefix="/api/v1/admin/spare", tags=["Admin Spare"])
 
 # Car routes
-app.include_router(carmodels.router, prefix="/api/v1/car/model", tags=["Car Model"])
-app.include_router(carspares.router, prefix="/api/v1/car/spare", tags=["Car Spare"])
+app.include_router(carmodels.router, prefix="/api/v1/car/model", tags=["Carmodels"])
+app.include_router(carspares.router, prefix="/api/v1/car/spare", tags=["SpareParts"])
 
 # Auth routes
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
