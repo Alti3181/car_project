@@ -5,6 +5,7 @@ from app.routes.carspares import router as spare_parts_router
 from app.routes.admincompany import company_router
 from app.routes.adminmodel import model_router
 from app.routes.adminspare import spare_router
+from app.routes.auth import router as login_router
 from app.database import async_engine
 from app.models import Base
 import logging
@@ -30,13 +31,18 @@ app.include_router(spare_parts_router)
 app.include_router(company_router)  # Include the company routes
 app.include_router(model_router)    # Include the model routes
 app.include_router(spare_router)    # Include the spare part routes
+app.include_router(login_router)
 
 async def init_db():
     """Initialize the database asynchronously."""
-    async with async_engine.begin() as conn:
-        logger.info("Initializing database...")
-        await conn.run_sync(Base.metadata.create_all)
-        logger.info("Database initialized successfully!")
+    try:
+        async with async_engine.begin() as conn:
+            logger.info("Initializing database...")
+            await conn.run_sync(Base.metadata.create_all)
+            logger.info("Database initialized successfully!")
+    except Exception as e:
+        logger.error(f"Failed to initialize database: {str(e)}")
+        raise
 
 @app.on_event("startup")
 async def startup():

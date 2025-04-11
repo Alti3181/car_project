@@ -14,7 +14,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-router = APIRouter()
+router = APIRouter(prefix = "/userlogin", tags=["authentication"])
 
 # Constants
 SECRET_KEY = "your-secret-key"  # In production, use environment variable
