@@ -1,3 +1,4 @@
+#app/schemas/spare.py
 from decimal import Decimal  # ✅ Correct import
 from pydantic import BaseModel, HttpUrl, ConfigDict
 from typing import Optional
@@ -9,7 +10,7 @@ class SparePartBase(BaseModel):
     quantity: int  # Ensure quantity is non-negative
     price: Decimal  # ✅ Use Python's decimal.Decimal
     img: Optional[HttpUrl] = None  # URL for image storage
-
+ 
     class Config:
         model_config = ConfigDict(from_attributes=True)  # ✅ Fix for Pydantic v2
 
@@ -24,7 +25,7 @@ class SparePartUpdate(BaseModel):
     img: Optional[HttpUrl] = None
 
     class Config:
-        model_config = ConfigDict(from_attributes=True)  # ✅ Fix for Pydantic v2
+            model_config = ConfigDict(from_attributes=True)  # ✅ Fix for Pydantic v2
 
 class SparePartResponse(SparePartBase):
     id: int  # Include ID for response
