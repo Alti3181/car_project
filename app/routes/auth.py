@@ -14,7 +14,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-router = APIRouter(prefix = "/userlogin", tags=["authentication"])
+router = APIRouter(prefix="/login", tags=["Authorization"])
 
 # Constants
 SECRET_KEY = "your-secret-key"  # In production, use environment variable
@@ -25,19 +25,41 @@ EMAIL_PASSWORD = "vdgl hjrk yrvw xkkf"
 
 bearer_scheme = HTTPBearer()
 
+# def send_otp_email(email: str, otp: str):
+    
+#     message = MIMEMultipart()
+#     message["From"] = EMAIL_SENDER
+#     message["To"] = email
+#     message["Subject"] = "Your OTP for Authentication"
+    
+#     body = f"Your OTP is: {otp}. It will expire in 10 minutes."
+#     message.attach(MIMEText(body, "plain"))
+    
+#     with smtplib.SMTP("smtp.gmail.com", 587) as server:
+#         server.starttls()
+#         server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+#         server.send_message(message)
 def send_otp_email(email: str, otp: str):
-    message = MIMEMultipart()
-    message["From"] = EMAIL_SENDER
-    message["To"] = email
-    message["Subject"] = "Your OTP for Authentication"
-    
-    body = f"Your OTP is: {otp}. It will expire in 10 minutes."
-    message.attach(MIMEText(body, "plain"))
-    
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-        server.send_message(message)
+    try:
+        print(f"Sending OTP to: {email}, OTP: {otp}")  # For debugging
+
+        message = MIMEMultipart()
+        message["From"] = EMAIL_SENDER
+        message["To"] = email
+        message["Subject"] = "Your OTP for Authentication"
+        
+        body = f"Your OTP is: {otp}. It will expire in 10 minutes."
+        message.attach(MIMEText(body, "plain"))
+        
+        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            server.starttls()
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.send_message(message)
+
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print("Failed to send OTP email:", e)
 
 def generate_otp():
     return ''.join(random.choices(string.digits, k=6))
@@ -77,16 +99,38 @@ async def get_current_user(token = Depends(bearer_scheme), db: AsyncSession = De
         raise credentials_exception
     return user
 
+# @router.post("/register", response_model=dict)
+# async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)):
+    # Create new user (allows duplicates)
+    # new_user = User(
+    #     username=user.username,
+    #     phone_number=user.phone_number,
+    #     email=user.email
+    # )
+    
+    # # Generate and save OTP
+    # otp = generate_otp()
+    # new_user.otp = otp
+    # new_user.otp_created_at = datetime.utcnow()
+    
+    # db.add(new_user)
+    # await db.commit()
+    # await db.refresh(new_user)
+    # # Log before sending email
+    # print(f"User {new_user.email} registered with OTP: {otp}")
+    # # Send OTP via email
+    # send_otp_email(user.email, otp)
+    
+    # return {"message": "OTP sent to your email"}
+
 @router.post("/register", response_model=dict)
 async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_db)):
-    # Create new user (allows duplicates)
     new_user = User(
         username=user.username,
         phone_number=user.phone_number,
         email=user.email
     )
     
-    # Generate and save OTP
     otp = generate_otp()
     new_user.otp = otp
     new_user.otp_created_at = datetime.utcnow()
@@ -95,10 +139,10 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_async_d
     await db.commit()
     await db.refresh(new_user)
     
-    # Send OTP via email
     send_otp_email(user.email, otp)
     
-    return {"message": "OTP sent to your email"}
+    return {"success": True, "message": "OTP sent to your email"}
+
 
 @router.post("/verify-otp", response_model=Token)
 async def verify_otp(otp_data: OTPVerify, db: AsyncSession = Depends(get_async_db)):
