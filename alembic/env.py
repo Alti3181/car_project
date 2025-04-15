@@ -15,6 +15,7 @@ from app.models.company import CarCompany
 from app.models.models import CarModel
 from app.models.spare import SparePart
 from app.models.user import User
+from app.models.errorlog import ErrorLog
 
 # Load environment variables
 load_dotenv()
