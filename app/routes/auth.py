@@ -19,7 +19,7 @@ router = APIRouter(prefix="/login", tags=["Authorization"])
 # Constants
 SECRET_KEY = "your-secret-key"  # In production, use environment variable
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 120
 EMAIL_SENDER = "headway366@gmail.com"
 EMAIL_PASSWORD = "vdgl hjrk yrvw xkkf"
 
@@ -92,6 +92,12 @@ async def get_current_user(token = Depends(bearer_scheme), db: AsyncSession = De
             raise credentials_exception
     except jwt.JWTError:
         raise credentials_exception
+    
+            # Check if the token is expired
+    exp = payload.get("exp")
+    if exp and datetime.utcfromtimestamp(exp) < datetime.utcnow():
+        raise credentials_exception
+        
     
     result = await db.execute(select(User).where(User.id == user_id))
     user = result.scalar_one_or_none()
